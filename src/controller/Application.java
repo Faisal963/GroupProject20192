@@ -1,9 +1,9 @@
 package controller;
 
-import java.io.File;
-
 import model.PrIS;
 import server.JSONFileServer;
+
+import java.io.File;
 
 public class Application {
 
@@ -27,6 +27,7 @@ public class Application {
 	 * in de browser opvragen! Zie ook de controller-klassen voor een voorbeeld!
 	 * 
 	 */
+
 	public static void main(String[] args) {
 		JSONFileServer server = new JSONFileServer(new File("webapp/app"), 8888);
 
@@ -35,6 +36,9 @@ public class Application {
 		SysteemDatumController systeemDatumController = new SysteemDatumController(infoSysteem);
 		LoginController loginController = new LoginController(infoSysteem);
 		MedestudentenController medestudentenController = new MedestudentenController(infoSysteem);
+		AanwezigheidController aanwezigheidController = new AanwezigheidController(infoSysteem);
+		StudentController studentController = new StudentController(infoSysteem);
+		DocentenController docentenController = new DocentenController(infoSysteem);
 
 		server.registerHandler("/systeemdatum/lesinfo", systeemDatumController);
 
@@ -42,6 +46,16 @@ public class Application {
 
 		server.registerHandler("/student/medestudenten/ophalen", medestudentenController);
 		server.registerHandler("/student/medestudenten/opslaan", medestudentenController);
+
+		server.registerHandler("/Docent/aanwezigheid", aanwezigheidController);
+
+		server.registerHandler("/Docent/lessen", aanwezigheidController);
+
+		server.registerHandler("/student/studentInfo", studentController);
+
+		server.registerHandler("/docent_studenten/ophalen", docentenController);
+		server.registerHandler("/docent_studenten/opslaan", docentenController);
+
 
 		server.start();
 	}

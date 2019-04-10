@@ -2,14 +2,23 @@
 package model.persoon;
 
 public class Student extends Persoon {
-
 	private int studentNummer;
 	private String groepId;
+	private boolean aanwezig;
+	private String reden;
 
-	public Student(String pVoornaam, String pTussenvoegsel, String pAchternaam, String pWachtwoord,
-			String pGebruikersnaam, int sStudentNummer) {
+	public Student(String pVoornaam,
+				   String pTussenvoegsel,
+				   String pAchternaam,
+				   String pWachtwoord,
+				   String pGebruikersnaam,
+				   int sStudentNummer,
+				   boolean aanwezig,
+				   String reden) {
 		super(pVoornaam, pTussenvoegsel, pAchternaam, pWachtwoord, pGebruikersnaam);
 		this.studentNummer = sStudentNummer;
+		this.aanwezig = aanwezig;
+		this.reden = reden;
 		this.setGroepId("");
 	}
 
@@ -33,6 +42,22 @@ public class Student extends Persoon {
 
 	public int getStudentNummer() {
 		return this.studentNummer;
+	}
+
+	public boolean getAanwezig() {
+		return aanwezig;
+	}
+
+	public void setAanwezig(boolean aanwezig) {
+		this.aanwezig = aanwezig;
+	}
+	
+	public String getReden() {
+		return reden;
+	}
+
+	public void setReden(String reden) {
+		this.reden = reden;
 	}
 
 }

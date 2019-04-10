@@ -4,6 +4,10 @@ public abstract class Persoon {
 
 	private String voornaam, tussenvoegsel, achternaam, wachtwoord, gebruikersnaam;
 
+	public String getTussenvoegsel() {
+		return tussenvoegsel;
+	}
+
 	public Persoon(String voornaam, String tussenvoegsel, String achternaam, String wachtwoord, String gebruikersnaam) {
 		this.voornaam = voornaam;
 		this.tussenvoegsel = tussenvoegsel;

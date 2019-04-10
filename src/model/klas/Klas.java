@@ -36,7 +36,17 @@ public class Klas {
 	public void voegStudentToe(Student pStudent) {
 		if (!this.getStudenten().contains(pStudent)) {
 			this.deStudenten.add(pStudent);
+		} else {
+			this.wijzigStudentNaar(pStudent);
 		}
 	}
-
+	
+	private void wijzigStudentNaar(Student studentNieuw) {
+		for (int i = 0; i < this.deStudenten.size(); i++) {
+			Student studentOud = this.deStudenten.get(i);
+			if (studentOud.getStudentNummer() == studentNieuw.getStudentNummer()) {
+				this.deStudenten.set(i, studentNieuw);
+			}
+		}
+	}
 }

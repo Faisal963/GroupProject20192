@@ -1,5 +1,10 @@
 package model;
 
+import model.klas.Klas;
+import model.les.Les;
+import model.persoon.Docent;
+import model.persoon.Student;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,14 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import model.klas.Klas;
-import model.persoon.Docent;
-import model.persoon.Student;
-
 public class PrIS {
 	private ArrayList<Docent> deDocenten;
 	private ArrayList<Student> deStudenten;
 	private ArrayList<Klas> deKlassen;
+	private ArrayList<Les> deLessen;
 
 	/**
 	 * De constructor maakt een set met standaard-data aan. Deze data moet nog
@@ -43,22 +45,26 @@ public class PrIS {
 	public PrIS() {
 		deDocenten = new ArrayList<Docent>();
 		deStudenten = new ArrayList<Student>();
-		deKlassen = new ArrayList<Klas>(); // Inladen klassen
-		vulKlassen(deKlassen); // Inladen studenten in klassen
+		deKlassen = new ArrayList<Klas>();
+		deLessen = new ArrayList<Les>();
+		// Inladen klassen
+		vulKlassen(deKlassen);
+		// Inladen studenten in klassen
 		vulStudenten(deStudenten, deKlassen);
 		// Inladen docenten
 		vulDocenten(deDocenten);
-
+		// inladen lessen
+		vulLessen(deLessen);
 	} // Einde Pris constructor
 
 	// deze method is static onderdeel van PrIS omdat hij als hulp methode
 	// in veel controllers gebruikt wordt
 	// een standaardDatumString heeft formaat YYYY-MM-DD
-	public static Calendar standaardDatumStringToCal(String pStadaardDatumString) {
+	public static Calendar standaardDatumStringToCal(String pStandaardDatumString) {
 		Calendar lCal = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		try {
-			lCal.setTime(sdf.parse(pStadaardDatumString));
+			lCal.setTime(sdf.parse(pStandaardDatumString));
 		} catch (ParseException e) {
 			e.printStackTrace();
 			lCal = null;
@@ -69,6 +75,7 @@ public class PrIS {
 	// deze method is static onderdeel van PrIS omdat hij als hulp methode
 	// in veel controllers gebruikt wordt
 	// een standaardDatumString heeft formaat YYYY-MM-DD
+
 	public static String calToStandaardDatumString(Calendar pCalendar) {
 		int lJaar = pCalendar.get(Calendar.YEAR);
 		int lMaand = pCalendar.get(Calendar.MONTH) + 1;
@@ -94,12 +101,20 @@ public class PrIS {
 		return deKlassen.stream().filter(k -> k.bevatStudent(pStudent)).findFirst().orElse(null);
 	}
 
+	public Klas getKlasNaam(String klas) {
+		return deKlassen.stream().filter(k -> k.getNaam().equals(klas)).findFirst().orElse(null);
+	}
+
 	public Student getStudent(String pGebruikersnaam) {
 		return deStudenten.stream().filter(s -> s.getGebruikersnaam().equals(pGebruikersnaam)).findFirst().orElse(null);
 	}
 
 	public Student getStudent(int pStudentNummer) {
 		return deStudenten.stream().filter(s -> s.getStudentNummer() == pStudentNummer).findFirst().orElse(null);
+	}
+
+	public Les getLes(String naam) {
+		return deLessen.stream().filter(d -> d.getNaam().equals(naam)).findFirst().orElse(null);
 	}
 
 	public String login(String gebruikersnaam, String wachtwoord) {
@@ -126,7 +141,7 @@ public class PrIS {
 		String csvFile = "././CSV/docenten.csv";
 		BufferedReader br = null;
 		String line = "";
-		String cvsSplitBy = ",";
+		String cvsSplitBy = ";";
 
 		try {
 
@@ -179,13 +194,15 @@ public class PrIS {
 
 	private void vulStudenten(ArrayList<Student> pStudenten, ArrayList<Klas> pKlassen) {
 		Student lStudent;
-		Student dummyStudent = new Student("Stu", "de", "Student", "geheim", "test@student.hu.nl", 0);
+		Student dummyStudent = new Student("Stu", "de", "Student", "geheim", "test@student.hu.nl", 0, true,"");
 		for (Klas k : pKlassen) {
+
 			// per klas
+
 			String csvFile = "././CSV/" + k.getNaam() + ".csv";
 			BufferedReader br = null;
 			String line = "";
-			String cvsSplitBy = ",";
+			String cvsSplitBy = ";";
 
 			try {
 
@@ -201,8 +218,10 @@ public class PrIS {
 					gebruikersnaam = gebruikersnaam.replace(" ", "");
 					String lStudentNrString = element[0];
 					int lStudentNr = Integer.parseInt(lStudentNrString);
+					String aanwezig = "";
 					// Volgorde 3-2-1 = voornaam, tussenvoegsel en achternaam
-					lStudent = new Student(element[3], element[2], element[1], "geheim", gebruikersnaam, lStudentNr);
+					lStudent = new Student(element[3], element[2], element[1], "geheim", gebruikersnaam, lStudentNr,
+							true, "");
 					pStudenten.add(lStudent);
 					k.voegStudentToe(lStudent);
 				}
@@ -219,17 +238,63 @@ public class PrIS {
 						e.printStackTrace();
 					}
 				}
+
 				// mocht deze klas geen studenten bevatten omdat de csv niet heeft gewerkt:
+
 				if (k.getStudenten().isEmpty()) {
 					k.voegStudentToe(dummyStudent);
 					System.out.println("Had to add Stu de Student to class: " + k.getKlasCode());
 				}
 			}
-
 		}
+
 		// mocht de lijst met studenten nu nog leeg zijn
+
 		if (pStudenten.isEmpty())
 			pStudenten.add(dummyStudent);
 	}
 
+	private void vulLessen(ArrayList<Les> lessen) {
+
+		String csvFile = "././CSV/rooster.csv";
+		BufferedReader bR = null;
+		String line = "";
+		String cvsSplit = ",";
+
+		try {
+
+			bR = new BufferedReader(new FileReader(csvFile));
+			while ((line = bR.readLine()) != null) { // use comma as separator
+				String[] element = line.split(cvsSplit);
+				String naam = element[0];
+				String cursuscode = element[1];
+				String startdag = element[3];
+				String einddag = element[6];
+				String werkvorm = element[10];
+				String startweek = element[2];
+				String duur = element[9];
+				String startdatum = element[4];
+				String starttijd = element[5];
+				String einddatum = element[7];
+				String eindtijd = element[8];
+				String docent = element[11];
+				lessen.add(new Les(naam, cursuscode, startdag, einddag, werkvorm, startweek, duur, startdatum,
+						starttijd, einddatum, eindtijd, docent));
+			}
+
+		} catch (FileNotFoundException fNFE) {
+			fNFE.printStackTrace();
+		} catch (IOException iE) {
+			iE.printStackTrace();
+		} finally {
+			// close the bufferedReader if opened.
+			if (bR != null) {
+				try {
+					bR.close();
+				} catch (IOException iE) {
+					iE.printStackTrace();
+				}
+			}
+		}
+	}
 }
